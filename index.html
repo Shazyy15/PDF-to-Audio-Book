@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Audio Book</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .upload-area {
+            padding: 30px;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload-area:hover {
+            background-color: #f0f0f0;
+        }
+
+        .upload-area p {
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        #pdfText {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .credit-btn {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+        }
+
+        #pdfText p {
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>PDF to Audio Book</h1>
+
+        <!-- Drag and Drop Area -->
+        <div class="upload-area" id="upload-area">
+            <p>Drag & Drop PDF Here or Click to Upload</p>
+            <input type="file" id="pdfFile" accept="application/pdf" style="display: none;">
+        </div>
+
+        <button id="readBtn" onclick="readPDF()" disabled>Read PDF</button>
+        <button id="pauseBtn" onclick="pauseSpeech()" disabled>Pause</button>
+        <button id="resumeBtn" onclick="resumeSpeech()" disabled>Resume</button>
+        <button id="stopBtn" onclick="stopSpeech()" disabled>Stop</button>
+        
+        <div id="pdfText"></div>
+
+        <!-- Developer Credit Button -->
+        <button class="credit-btn"> Developed by Shazil Shahid</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
+
+    <script>
+        let synth = window.speechSynthesis;
+        let utterance;
+        let currentText = "";
+
+        // Drag-and-Drop functionality
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('pdfFile');
+        let file;
+
+        uploadArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadArea.style.backgroundColor = "#e9ecef";
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = "#f9f9f9";
+        });
+
+        uploadArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            uploadArea.style.backgroundColor = "#f9f9f9";
+            file = event.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                fileInput.files = event.dataTransfer.files;
+                enableReadButton();
+            } else {
+                alert('Please upload a valid PDF file.');
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            file = event.target.files[0];
+            if (file) {
+                enableReadButton();
+            }
+        });
+
+        function enableReadButton() {
+            document.getElementById('readBtn').disabled = false;
+        }
+
+        // Read the PDF
+        function readPDF() {
+            if (!file) {
+                alert('Please upload a PDF file.');
+                return;
+            }
+
+            const fileReader = new FileReader();
+
+            fileReader.onload = function () {
+                const typedArray = new Uint8Array(this.result);
+
+                pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+                    let pdfText = '';
+
+                    let pagePromises = [];
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        pagePromises.push(pdf.getPage(i).then(page => {
+                            return page.getTextContent().then(textContent => {
+                                let pageText = textContent.items.map(item => item.str).join(' ');
+                                pdfText += pageText + '\n\n';
+                            });
+                        }));
+                    }
+
+                    Promise.all(pagePromises).then(() => {
+                        document.getElementById('pdfText').innerText = pdfText;
+                        currentText = pdfText;
+                        startSpeech(pdfText);
+                    });
+                });
+            };
+
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        // Start the text to speech
+        function startSpeech(text) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+
+            utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // Change as needed
+            utterance.onend = function () {
+                resetButtons();
+            };
+
+            synth.speak(utterance);
+            updateButtons(true);
+        }
+
+        // Pause the speech
+        function pauseSpeech() {
+            if (synth.speaking && !synth.paused) {
+                synth.pause();
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('resumeBtn').disabled = false;
+            }
+        }
+
+        // Resume the speech
+        function resumeSpeech() {
+            if (synth.paused) {
+                synth.resume();
+                document.getElementById('resumeBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+            }
+        }
+
+        // Stop the speech
+        function stopSpeech() {
+            if (synth.speaking) {
+                synth.cancel();
+                resetButtons();
+            }
+        }
+
+        // Update button states
+        function updateButtons(isReading) {
+            document.getElementById('pauseBtn').disabled = !isReading;
+            document.getElementById('resumeBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = !isReading;
+        }
+
+        // Reset buttons when speech ends or is stopped
+        function resetButtons() {
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('resumeBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('readBtn').disabled = false;
+        }
+    </script>
+
+</body>
+</html>
