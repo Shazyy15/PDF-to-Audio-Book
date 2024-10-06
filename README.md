@@ -36,12 +36,12 @@ To run the project locally:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Shazyy15/PDF-to-Audio-Book-.git
+   git clone https://github.com/Shazyy15/PDF-to-Audio-Book.git
    ```
 Navigate to the project directory:
 
 ```
-cd PDF-to-Audio-Book-
+cd PDF-to-Audio-Book
 ```
 Open the index.html file in your web browser (no need for a server):
 
