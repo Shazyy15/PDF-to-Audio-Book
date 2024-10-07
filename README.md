@@ -47,13 +47,13 @@ Open the index.html file in your web browser (no need for a server):
 
 
 
-# 🎨 Technologies Used
+## 🎨 Technologies Used
 HTML5: Structure of the webpage.
 CSS3: For styling and layout.
 JavaScript: Core logic for file handling, text-to-speech, and interactivity.
 PDF.js: A powerful library to extract text from PDF files.
 SpeechSynthesis API: Converts the extracted text into speech.
-# 🌐 Browser Support
+## 🌐 Browser Support
 This application works best in modern browsers that support the Web Speech API and PDF.js, including:
 <br>
 Google Chrome
@@ -62,9 +62,9 @@ Microsoft Edge
 <br>
 ❗ Note: Some features might not work perfectly in Safari due to limited support for the Web Speech API.
 
-# 💡 Ideas for Future Enhancements
+## 💡 Ideas for Future Enhancements
 1. **🌍 Multiple Language Support1**: Add functionality to detect or select the PDF’s language and read the content accordingly.
 2. **🎙️ Voice Customization:** Allow users to select different voices or adjust the pitch and speed of the speech.
 3. **💾 Save Speech as Audio:** Implement a feature to save the spoken text as an audio file.
-# 👨‍💻 Developer
+## 👨‍💻 Developer
 This project was developed by Shazil Shahid. Feel free to reach out with any questions or feedback!
