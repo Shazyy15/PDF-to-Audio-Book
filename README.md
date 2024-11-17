@@ -63,7 +63,7 @@ Microsoft Edge
 ❗ Note: Some features might not work perfectly in Safari due to limited support for the Web Speech API.
 
 ## 💡 Ideas for Future Enhancements
-1. **🌍 Multiple Language Support1**: Add functionality to detect or select the PDF’s language and read the content accordingly.
+1. **🌍 Multiple Language Support**: Add functionality to detect or select the PDF’s language and read the content accordingly.
 2. **🎙️ Voice Customization:** Allow users to select different voices or adjust the pitch and speed of the speech.
 3. **💾 Save Speech as Audio:** Implement a feature to save the spoken text as an audio file.
 ## 👨‍💻 Developer
